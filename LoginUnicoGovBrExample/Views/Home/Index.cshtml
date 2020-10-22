@@ -1,0 +1,11 @@
+﻿@model LoginUnicoGovBr.Core.LoginUnicoGovBrRequest
+@{
+    ViewData["Title"] = "Home Page";
+    ViewData["AuthURI"] = Model.GetAuthenticationURI();    
+}
+
+    <div class="text-center">
+        <h1 class="display-4">Welcome</h1>
+        <a class="btn btn-primary" href="@ViewData["AuthURI"].ToString()">Entrar com Gov.Br</a>
+        <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    </div>

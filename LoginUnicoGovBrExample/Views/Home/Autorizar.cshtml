@@ -1,0 +1,9 @@
+﻿@model LoginUnicoGovBr.Core.Model.LoginGovBrUserData
+@{
+    ViewData["Title"] = "Autenticação";
+    ViewData["Nome"] = Model.ID_Token.Name;
+}
+
+    <div class="text-center">
+        <h1 class="display-4">Autenticado o usuário @ViewData["Nome"]</h1>        
+    </div>
