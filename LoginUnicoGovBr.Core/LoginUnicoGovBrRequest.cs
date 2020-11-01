@@ -60,30 +60,63 @@ namespace LoginUnicoGovBr.Core
             RequestHelper request = new RequestHelper();
 
             // Realiza a chamada com a autenticação requisitada
-            HttpResponseMessage response = await request.DoPostWithAuthentication(tokenURI, this._request.ClientID, this._request.ClientSecret, postData);
+            APIResponse response = await request.DoPostWithAuthentication(tokenURI, this._request.ClientID, this._request.ClientSecret, postData);
 
-            // Cria a instanca do APIResponse
-            APIResponse apiData = new APIResponse();
+            // Converte a resposta para um objeto de usuário
+            response.Data = JsonConvert.DeserializeObject<LoginGovBrUserData>(response.Data);
 
-            // Se a resposta retornou corretamente, prossegue com a conversão dos dados
-            if (response.IsSuccessStatusCode)
-            {
-                // Recupera o conteúdo da chamada
-                string conteudo = response.Content.ReadAsStringAsync().Result;
+            return response;
+        }
 
-                // Atribui os dados à instância da resposta
-                apiData.Result = true;
-                apiData.Count = 1;
-                apiData.Data = JsonConvert.DeserializeObject<LoginGovBrUserData>(conteudo);
-            }
-            else
-            {
-                apiData.Result = false;
-                apiData.Count = 0;
-                apiData.Message = response.ReasonPhrase;
-            }
+        public async Task<APIResponse> GetPicture(AccessToken accessToken)
+        {
+            // Define a URI da requisição da imagem
+            string pictureURI = "https://sso.staging.acesso.gov.br/userinfo/picture";
 
-            return apiData;
+            // Converte a classe para o formato JSON
+            string token = JsonConvert.SerializeObject(accessToken);
+
+            // Instancia o helper de requisição
+            RequestHelper request = new RequestHelper();
+
+            // Realiza a chamada com a autenticação requisitada
+            APIResponse response = await request.DoGetWithAuthentication(pictureURI, token);
+
+            return response;
+        }
+
+        public async Task<APIResponse> GetCategorias(AccessToken accessToken)
+        {
+            // Define a URI da requisição da imagem
+            string pictureURI = string.Format("https://api.staging.acesso.gov.br/confiabilidades/v2/contas/{0}/categorias", accessToken.Sub);
+
+            // Converte a classe para o formato JSON
+            string token = JsonConvert.SerializeObject(accessToken);
+
+            // Instancia o helper de requisição
+            RequestHelper request = new RequestHelper();
+
+            // Realiza a chamada com a autenticação requisitada
+            APIResponse response = await request.DoGetWithAuthentication(pictureURI, token);
+
+            return response;
+        }
+
+        public async Task<APIResponse> GetConfiabilidades(AccessToken accessToken)
+        {
+            // Define a URI da requisição da imagem
+            string pictureURI = string.Format("https://api.staging.acesso.gov.br/confiabilidades/v2/contas/{0}/confiabilidades", accessToken.Sub);
+
+            // Converte a classe para o formato JSON
+            string token = JsonConvert.SerializeObject(accessToken);
+
+            // Instancia o helper de requisição
+            RequestHelper request = new RequestHelper();
+
+            // Realiza a chamada com a autenticação requisitada
+            APIResponse response = await request.DoGetWithAuthentication(pictureURI, token);
+
+            return response;
         }
     }
 }

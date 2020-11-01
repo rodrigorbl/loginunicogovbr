@@ -4,6 +4,7 @@ using System.Text;
 
 namespace LoginUnicoGovBr.Core.Model
 {
+    [Serializable]
     public class LoginGovBrUserData
     {
         public AccessToken Access_Token { get; set; }

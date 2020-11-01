@@ -5,6 +5,7 @@ using System.Text;
 
 namespace LoginUnicoGovBr.Core.Model
 {
+    [Serializable]
     public class IDToken
     {
         [Description("CPF do usuário autenticado")]
@@ -16,11 +17,11 @@ namespace LoginUnicoGovBr.Core.Model
         [Description("Nome cadastrado no Gov.br do usuário autenticado")]
         public string Name { get; set; }
         [Description("Confirma se o telefone foi validado no cadastro do Gov.br. Poderá ter o valor true ou false")]
-        public bool PhoneNumberVerified { get; set; }
+        public bool Phone_Number_Verified { get; set; }
         [Description("Número de telefone cadastrado no Gov.br do usuário autenticado. Caso o atributo phone_number_verified do ID_TOKEN tiver o valor false, o atributo phone_number não virá no ID_TOKEN")]
-        public string PhoneNumber { get; set; }
+        public string Phone_Number { get; set; }
         [Description("Confirma se o email foi validado no cadastro do Gov.br. Poderá ter o valor true ou false")]
-        public bool EmailVerified { get; set; }
+        public bool Email_Verified { get; set; }
         [Description("Endereço de e-mail cadastrado no Gov.br do usuário autenticado. Caso o atributo email_verified do ID_TOKEN tiver o valor false, o atributo email não virá no ID_TOKEN")]
         public string Email { get; set; }
         [Description("CNPJ vinculado ao usuário autenticado. Atributo será preenchido quando autenticação ocorrer por certificado digital de pessoal jurídica")]

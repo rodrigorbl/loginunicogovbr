@@ -5,6 +5,7 @@ using System.Text;
 
 namespace LoginUnicoGovBr.Core.Model
 {
+    [Serializable]
     public class AccessToken
     {
         [Description("CPF do usuário autenticado")]

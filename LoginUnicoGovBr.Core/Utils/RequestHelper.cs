@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using LoginUnicoGovBr.Core.Model;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -17,28 +18,52 @@ namespace LoginUnicoGovBr.Core.Utils
             _httpClient = new HttpClient();
         }
 
-        public async Task<HttpResponseMessage> DoPostWithAuthentication(string uri, string bearerToken, Dictionary<string,string> postData)
+        private void SetAuthenticationHeader(string authType, string authSecret)
         {
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authType, authSecret);
+        }
 
+        public async Task<APIResponse> DoGetWithAuthentication(string uri, string bearerToken)
+        {
+            this.SetAuthenticationHeader("Bearer", bearerToken);
+            return await DoGetAsync(uri);
+        }
+
+        public async Task<APIResponse> DoPostWithAuthentication(string uri, string bearerToken, Dictionary<string,string> postData)
+        {
+            this.SetAuthenticationHeader("Bearer", bearerToken);
             return await DoPostAsync(uri, postData);
         }
 
-        public async Task<HttpResponseMessage> DoPostWithAuthentication(string uri, string client_id, string client_secret, Dictionary<string,string> postData)
+        public async Task<APIResponse> DoPostWithAuthentication(string uri, string client_id, string client_secret, Dictionary<string,string> postData)
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes($"{client_id}:{client_secret}");
             string token = Convert.ToBase64String(plainTextBytes);
 
-            _httpClient.DefaultRequestHeaders.Accept.Clear();
-            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", token);
-
+            this.SetAuthenticationHeader("Basic", token);
             return await DoPostAsync(uri, postData);
         }
 
-        private async Task<HttpResponseMessage> DoPostAsync(string uri, Dictionary<string, string> postData)
+        public async Task<APIResponse> DoGetAsync(string uri)
+        {
+            HttpResponseMessage response = new HttpResponseMessage();
+
+            try
+            {
+                response = await _httpClient.GetAsync(uri);
+            }
+            catch (Exception e)
+            {
+                response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                response.ReasonPhrase = string.Format("Falha na Requisição: {0}", e);
+            }
+
+            return PrepareResponse(response);
+        }
+
+        public async Task<APIResponse> DoPostAsync(string uri, Dictionary<string, string> postData)
         {
             HttpResponseMessage response = new HttpResponseMessage();
             
@@ -55,7 +80,37 @@ namespace LoginUnicoGovBr.Core.Utils
                 response.ReasonPhrase = string.Format("Falha na Requisição: {0}", e);
             }
 
-            return response;
+            return PrepareResponse(response);
+        }
+
+        /// <summary>
+        /// Formata o resultado da chamada HTTP para a instância da classe padrão de retorno de dados da API
+        /// </summary>
+        /// <param name="response">Resposta da execução da chamada de API</param>
+        /// <returns></returns>
+        private APIResponse PrepareResponse(HttpResponseMessage response)
+        {
+            APIResponse apiResponse = new APIResponse();
+
+            // Se a resposta retornou corretamente, prossegue com a conversão dos dados
+            if (response.IsSuccessStatusCode)
+            {
+                // Recupera o conteúdo da chamada
+                string conteudo = response.Content.ReadAsStringAsync().Result;
+
+                // Atribui os dados à instância da resposta
+                apiResponse.Result = true;
+                apiResponse.Count = 1;
+                apiResponse.Data = conteudo;
+            }
+            else
+            {
+                apiResponse.Result = false;
+                apiResponse.Count = 0;
+                apiResponse.Message = response.ReasonPhrase;
+            }
+
+            return apiResponse;
         }
     }
 }
