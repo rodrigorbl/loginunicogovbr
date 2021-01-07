@@ -24,5 +24,7 @@ Implementado de acordo com o [Roteiro de Integração do Login Único](https://m
 
 6. Utilize o método **_GetLogoutURI()_** para obter a URL de logout no sistema do Login Único.
 
+**Obs.:** A solução inclui um projeto ASP.NET MVC com um exemplo de implementação.
+
 ## ToDo
 Apesar de existirem métodos para o acesso aos serviços de Confiabilidade e Categorias, estes ainda não foram completamente implementados ou testados.
