@@ -12,7 +12,7 @@ Implementado de acordo com o [Roteiro de Integração do Login Único](https://m
 
 ## Workflow básico
 
-1. Instancie a classe com o Client Id e Client Secret fornecidos e o Redirect URL e Logout URL informados durante o processo de cadastramento da sua aplicação junto aos órgãos competentes.
+1. Instancie a classe **LoginUnicoGovBrRequest** com o Client Id e Client Secret fornecidos e o Redirect URL e Logout URL informados durante o processo de cadastramento da sua aplicação junto aos órgãos competentes.
 
 2. O método *GetAuthenticationURI()* fornece a URL completa para acessar a página de autenticação do Login Único e os parâmetros necessários para identificar sua aplicação.
 
