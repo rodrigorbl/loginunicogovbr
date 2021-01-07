@@ -1,9 +1,9 @@
 ﻿@model LoginUnicoGovBr.Core.Model.LoginGovBrUserData
 @{
-    ViewData["Title"] = "Autenticação";
-    ViewData["Nome"] = Model.ID_Token.Name;
+    ViewData["Title"] = "Autenticação";    
 }
 
     <div class="text-center">
-        <h1 class="display-4">Autenticado o usuário @ViewData["Nome"]</h1>        
+        <h1 class="display-4">Autenticado o usuário @Model.TokenData.Name</h1>
+        <a href="@TempData["LogoutURL"]" class="btn btn-primary">Sair</a>
     </div>

@@ -17,18 +17,16 @@ namespace LoginUnicoGovBr.Core
     /// </summary>
     public class LoginUnicoGovBrRequest
     {
-        //private const string _authenticationURI = "https://sso.staging.acesso.gov.br/authorize";
-        //private const string _tokenURI = "https://sso.staging.acesso.gov.br/token";
-
-        private const string _authenticationURI = "http://127.0.0.1/mockloginunico/authorize";
-        private const string _tokenURI = "http://127.0.0.1/mockloginunico/token";
+        private const string _authenticationURI = "https://sso.staging.acesso.gov.br/authorize";
+        private const string _tokenURI = "https://sso.staging.acesso.gov.br/token";
+        private const string _logoutURI = "https://sso.staging.acesso.gov.br/logout";
 
         private LoginGovBrAuthenticationParam _request { get; set; }        
 
-        public LoginUnicoGovBrRequest(string client_id, string client_secret, string redirect_uri) : this(client_id, client_secret, redirect_uri, new List<Scopes>()) { }
-        public LoginUnicoGovBrRequest(string client_id, string client_secret, string redirect_uri, IEnumerable<Scopes> scopes)
+        public LoginUnicoGovBrRequest(string client_id, string client_secret, string redirect_uri, string logout_redirect_uri) : this(client_id, client_secret, redirect_uri, logout_redirect_uri, new List<Scopes>()) { }
+        public LoginUnicoGovBrRequest(string client_id, string client_secret, string redirect_uri, string logout_redirect_uri, IEnumerable<Scopes> scopes)
         {
-            this._request = new LoginGovBrAuthenticationParam(client_id, client_secret, redirect_uri);
+            this._request = new LoginGovBrAuthenticationParam(client_id, client_secret, redirect_uri, logout_redirect_uri);
 
             // A instanciação de LoginGovBrAuthenticationParam de autenticação atribui por padrão todos os escopos existentes
             if (scopes.Count() > 0) this._request.Scope = scopes;
@@ -40,7 +38,16 @@ namespace LoginUnicoGovBr.Core
         /// <returns>URI de autenticação</returns>
         public string GetAuthenticationURI()
         {
-            return _authenticationURI + "?" + this._request.ToString();
+            return string.Format("{0}?{1}", _authenticationURI, this._request.ToString());
+        }
+
+        /// <summary>
+        /// Retorna a URL para requisição do logout no login único do governo.
+        /// </summary>
+        /// <returns></returns>
+        public string GetLogoutURI()
+        {
+            return string.Format("{0}?post_logout_redirect_uri={1}", _logoutURI, this._request.LogoutRedirectURI);
         }
 
         /// <summary>
@@ -51,7 +58,7 @@ namespace LoginUnicoGovBr.Core
         public async Task<APIResponse> RequestToken(LoginGovBrAuthenticationResponse responseCode)
         {            
             // Define a URI de requisição ao token
-            string tokenURI = string.Format("{0}?grant_type={1}&code={2}&redirect_uri={3}", _tokenURI, "autorization_code", responseCode.Code, this._request.RedirectURI);
+            string tokenURI = string.Format("{0}?grant_type={1}&code={2}&redirect_uri={3}", _tokenURI, "authorization_code", responseCode.Code, this._request.RedirectURI);
 
             // Define os dados a serem enviados via POST
             Dictionary<string, string> postData = new Dictionary<string, string>();

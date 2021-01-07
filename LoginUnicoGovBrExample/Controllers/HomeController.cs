@@ -15,12 +15,17 @@ namespace LoginUnicoGovBrExample.Controllers
         private readonly ILogger<HomeController> _logger;
         private LoginUnicoGovBrRequest LoginUnicoRequest { get; set; }
 
+        /// <summary>
+        /// Exemplo de criação da instância do request. Esse exemplo é complatamente opcional. Você pode criar a instância sem utilizar arquivos de configuração, passando diretamente os dados de autenticação (apesar de não ser recomendado)
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="config"></param>
         public HomeController(ILogger<HomeController> logger, IOptions<LoginUnicoGovBrConfig> config)
         {
             _logger = logger;
 
             // Instanciação da classe de apoio à autenticação com Login Único do Governo Federal. Necessário ter sido cadastrado na plataforma Gov.Br para obter o client_id e client_secret.
-            this.LoginUnicoRequest = new LoginUnicoGovBrRequest(config.Value.ClientID, config.Value.ClientSecret, config.Value.RedirectURI);
+            this.LoginUnicoRequest = new LoginUnicoGovBrRequest(config.Value.ClientID, config.Value.ClientSecret, config.Value.RedirectURI, config.Value.LogoutRedirectURI);
         }
 
         /// <summary>
@@ -61,8 +66,17 @@ namespace LoginUnicoGovBrExample.Controllers
 
             }
 
+            // Recupera a URL de logout da aplicação
+            TempData["LogoutURL"] = this.LoginUnicoRequest.GetLogoutURI();
             return View(userData);
-        }        
+        }
+
+        public IActionResult Logout()
+        {
+            // Incluir a logica de logout na aplicação
+
+            return View();
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

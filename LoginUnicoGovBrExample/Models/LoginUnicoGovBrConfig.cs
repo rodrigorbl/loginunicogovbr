@@ -10,5 +10,6 @@ namespace LoginUnicoGovBrExample.Models
         public string ClientID { get; set; }
         public string ClientSecret { get; set; }
         public string RedirectURI { get; set; }
+        public string LogoutRedirectURI { get; set; }
     }
 }

@@ -57,7 +57,7 @@ namespace LoginUnicoGovBr.Core.Utils
             catch (Exception e)
             {
                 response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-                response.ReasonPhrase = string.Format("Falha na Requisição: {0}", e);
+                response.ReasonPhrase = string.Format("Falha na Requisição: {0}", e.Message);
             }
 
             return PrepareResponse(response);
@@ -77,7 +77,7 @@ namespace LoginUnicoGovBr.Core.Utils
             catch (Exception e)
             {
                 response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-                response.ReasonPhrase = string.Format("Falha na Requisição: {0}", e);
+                response.ReasonPhrase = string.Format("Falha na Requisição: {0}", e.Message);
             }
 
             return PrepareResponse(response);

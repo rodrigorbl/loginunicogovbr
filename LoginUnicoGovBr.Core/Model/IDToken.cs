@@ -26,5 +26,10 @@ namespace LoginUnicoGovBr.Core.Model
         public string Email { get; set; }
         [Description("CNPJ vinculado ao usuário autenticado. Atributo será preenchido quando autenticação ocorrer por certificado digital de pessoal jurídica")]
         public string CNPJ { get; set; }
+
+        public string getCpfCnpj()
+        {
+            return string.IsNullOrEmpty(this.CNPJ) ? this.Sub : this.CNPJ;
+        }
     }
 }
