@@ -33,7 +33,7 @@ namespace LoginUnicoGovBr.Core.Model
         {
             get
             {
-                string payload = this.ID_Token.Split(".")[1] + "==";
+                string payload = this.ID_Token.Split(".")[1];
 
                 var base64EncodedBytes = this.ConvertFromBase64String(payload);
                 string token = System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
