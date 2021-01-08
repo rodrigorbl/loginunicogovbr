@@ -69,7 +69,7 @@ namespace LoginUnicoGovBrExample.Controllers
             // Recupera a URL de logout da aplicação
             TempData["LogoutURL"] = this.LoginUnicoRequest.GetLogoutURI();
             return View(userData);
-        }
+        } 
 
         public IActionResult Logout()
         {

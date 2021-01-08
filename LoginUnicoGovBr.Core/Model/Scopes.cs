@@ -10,6 +10,7 @@ namespace LoginUnicoGovBr.Core.Model
         Email,
         Phone,
         Profile,
+        GOVBR_Empresa,
         GOVBR_Confiabilidades
     }
 }

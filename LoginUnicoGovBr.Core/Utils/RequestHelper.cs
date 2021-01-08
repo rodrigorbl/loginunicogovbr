@@ -95,13 +95,21 @@ namespace LoginUnicoGovBr.Core.Utils
             // Se a resposta retornou corretamente, prossegue com a conversão dos dados
             if (response.IsSuccessStatusCode)
             {
-                // Recupera o conteúdo da chamada
-                string conteudo = response.Content.ReadAsStringAsync().Result;
+                // Realiza conversões com base no content-type
+                if (response.Content.Headers.ContentType.MediaType.Contains("image"))
+                {
+                    apiResponse.Data = response.Content.ReadAsByteArrayAsync().Result;
+                }
+                else
+                {
+                    // Recupera o conteúdo da chamada
+                    apiResponse.Data = response.Content.ReadAsStringAsync().Result;
+                }
 
                 // Atribui os dados à instância da resposta
                 apiResponse.Result = true;
                 apiResponse.Count = 1;
-                apiResponse.Data = conteudo;
+                //apiResponse.Data = conteudo;
             }
             else
             {

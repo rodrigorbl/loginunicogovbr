@@ -28,7 +28,8 @@ namespace LoginUnicoGovBr.Core
         {
             this._request = new LoginGovBrAuthenticationParam(client_id, client_secret, redirect_uri, logout_redirect_uri);
 
-            // A instanciação de LoginGovBrAuthenticationParam de autenticação atribui por padrão todos os escopos existentes
+            // A instanciação de LoginGovBrAuthenticationParam de autenticação atribui por padrão os escopos OpenID, Email, Phone e Profile
+            // Como os escopos são identificados já na autenticação do usuário, sua atribuição poderá ser realizada apenas na instanciação da classe
             if (scopes.Count() > 0) this._request.Scope = scopes;
         }
 
@@ -69,8 +70,69 @@ namespace LoginUnicoGovBr.Core
             // Realiza a chamada com a autenticação requisitada
             APIResponse response = await request.DoPostWithAuthentication(tokenURI, this._request.ClientID, this._request.ClientSecret, postData);
 
-            // Converte a resposta para um objeto de usuário
-            response.Data = JsonConvert.DeserializeObject<LoginGovBrUserData>(response.Data);
+            // Realiza as conversões caso a requisição tenha sido realizada com sucesso
+            if (response.Result)
+            {
+                // Converte a resposta para um objeto de usuário
+                response.Data = JsonConvert.DeserializeObject<LoginGovBrUserData>(response.Data);
+            }
+
+            return response;
+        }
+
+        /*
+        public async Task<APIResponse> GetEmpresas(AccessToken accessToken)
+        {
+            // Instancia a variável de retorno
+            APIResponse response = new APIResponse();
+
+            // Verifica se o scope necessário foi adicionado à requisição de autenticação
+            if (this._request.Scope.Contains(Scopes.GOVBR_Empresa))
+            {
+                // Define a URI da requisição da imagem
+                string serviceURI = string.Format("https://api.staging.acesso.gov.br/empresas/v2/empresas?filtrar-por-participante={0}", accessToken.Sub);
+
+                // Converte a classe para o formato JSON
+                string token = JsonConvert.SerializeObject(accessToken);
+
+                // Instancia o helper de requisição
+                RequestHelper request = new RequestHelper();
+
+                // Realiza a chamada com a autenticação requisitada
+                response = await request.DoGetWithAuthentication(serviceURI, token);
+
+                // Converte a resposta para o objeto correto
+                response.Data = JsonConvert.DeserializeObject<LoginGovBrEmpesa>(response.Data);
+            }
+            else
+            {
+                response = new APIResponse()
+                {
+                    Count = 0,
+                    Message = "Para recuperar os dados das empresas vinculadas ao CPF, é necessário incluir o scope 'govbr_empresa' à requisição de autenticação.",
+                    Result = false
+                };
+            }
+
+            return response;
+        }
+
+        public async Task<APIResponse> GetDetalhesEmpresa(AccessToken accessToken, string cnpj)
+        {
+            // Define a URI da requisição da imagem
+            string serviceURI = string.Format("https://api.staging.acesso.gov.br/empresas/v2/empresas/{0}/participantes/{1}", cnpj, accessToken.Sub);
+
+            // Converte a classe para o formato JSON
+            string token = JsonConvert.SerializeObject(accessToken);
+
+            // Instancia o helper de requisição
+            RequestHelper request = new RequestHelper();
+
+            // Realiza a chamada com a autenticação requisitada
+            APIResponse response = await request.DoGetWithAuthentication(serviceURI, token);
+
+            // Converte a resposta para o objeto correto
+            response.Data = JsonConvert.DeserializeObject<LoginGovBrEmpesa>(response.Data);
 
             return response;
         }
@@ -92,10 +154,35 @@ namespace LoginUnicoGovBr.Core
             return response;
         }
 
-        public async Task<APIResponse> GetCategorias(AccessToken accessToken)
+        public async Task<APIResponse> GetAllConfiabilidades(AccessToken accessToken)
+        {
+            // Recupera cada uma das confiabilidades existentes
+            APIResponse niveis = await this.GetNiveis(accessToken);
+            APIResponse categorias = await this.GetCategorias(accessToken);
+            APIResponse selos = await this.GetConfiabilidades(accessToken);
+
+            // Atribui a resposta a um único objeto APIResponse
+            List<LoginGovBrConfiabilidade> confiabilidades = new List<LoginGovBrConfiabilidade>();
+
+            confiabilidades.Add(niveis.Data);
+            confiabilidades.Add(categorias.Data);
+            confiabilidades.Add(selos.Data);
+
+            APIResponse response = new APIResponse()
+            {
+                Count = 3,
+                Data = confiabilidades,
+                Result = true,
+                Message = (niveis.Result && categorias.Result && selos.Result ? "" : "Não foi possível recuperar uma ou mais confiabilidades. Verifique quais não foram retornadas e tente novamente ou faça a chamada individualmente.")
+            };
+
+            return response;
+        }
+
+        public async Task<APIResponse> GetNiveis(AccessToken accessToken)
         {
             // Define a URI da requisição da imagem
-            string pictureURI = string.Format("https://api.staging.acesso.gov.br/confiabilidades/v2/contas/{0}/categorias", accessToken.Sub);
+            string pictureURI = string.Format("https://api.staging.acesso.gov.br/confiabilidades/v3/contas/{0}/niveis?response-type=ids", accessToken.Sub);
 
             // Converte a classe para o formato JSON
             string token = JsonConvert.SerializeObject(accessToken);
@@ -105,25 +192,86 @@ namespace LoginUnicoGovBr.Core
 
             // Realiza a chamada com a autenticação requisitada
             APIResponse response = await request.DoGetWithAuthentication(pictureURI, token);
+
+            // Realiza as conversões caso a requisição tenha sido realizada com sucesso
+            if (response.Result)
+            {
+                // Converte a resposta para um objeto correto
+                LoginGovBrConfiabilidade confiabilidade = JsonConvert.DeserializeObject<LoginGovBrConfiabilidade>(response.Data);
+                confiabilidade.TipoConfiabilidade = TipoConfiabilidade.Niveis;
+                response.Data = confiabilidade;
+            }
+
+            return response;
+        }
+
+        public async Task<APIResponse> GetCategorias(AccessToken accessToken)
+        {
+            // Define a URI da requisição da imagem
+            string pictureURI = string.Format("https://api.staging.acesso.gov.br/confiabilidades/v3/contas/{0}/categorias?response-type=ids", accessToken.Sub);
+
+            // Converte a classe para o formato JSON
+            string token = JsonConvert.SerializeObject(accessToken);
+
+            // Instancia o helper de requisição
+            RequestHelper request = new RequestHelper();
+
+            // Realiza a chamada com a autenticação requisitada
+            APIResponse response = await request.DoGetWithAuthentication(pictureURI, token);
+
+            // Realiza as conversões caso a requisição tenha sido realizada com sucesso
+            if (response.Result)
+            {
+                // Converte a resposta para um objeto correto
+                LoginGovBrConfiabilidade confiabilidade = JsonConvert.DeserializeObject<LoginGovBrConfiabilidade>(response.Data);
+                confiabilidade.TipoConfiabilidade = TipoConfiabilidade.Categorias;
+                response.Data = confiabilidade;
+            }
 
             return response;
         }
 
         public async Task<APIResponse> GetConfiabilidades(AccessToken accessToken)
         {
-            // Define a URI da requisição da imagem
-            string pictureURI = string.Format("https://api.staging.acesso.gov.br/confiabilidades/v2/contas/{0}/confiabilidades", accessToken.Sub);
+            // Instancia a variável de retorno
+            APIResponse response = new APIResponse();
 
-            // Converte a classe para o formato JSON
-            string token = JsonConvert.SerializeObject(accessToken);
+            // Verifica se o scope necessário foi adicionado à requisição de autenticação
+            if (this._request.Scope.Contains(Scopes.GOVBR_Empresa))
+            {
+                // Define a URI da requisição da imagem
+                string pictureURI = string.Format("https://api.staging.acesso.gov.br/confiabilidades/v3/contas/{0}/confiabilidades?response-type=ids", accessToken.Sub);
 
-            // Instancia o helper de requisição
-            RequestHelper request = new RequestHelper();
+                // Converte a classe para o formato JSON
+                string token = JsonConvert.SerializeObject(accessToken);
 
-            // Realiza a chamada com a autenticação requisitada
-            APIResponse response = await request.DoGetWithAuthentication(pictureURI, token);
+                // Instancia o helper de requisição
+                RequestHelper request = new RequestHelper();
+
+                // Realiza a chamada com a autenticação requisitada
+                response = await request.DoGetWithAuthentication(pictureURI, token);
+
+                // Realiza as conversões caso a requisição tenha sido realizada com sucesso
+                if (response.Result)
+                {
+                    // Converte a resposta para um objeto correto
+                    LoginGovBrConfiabilidade confiabilidade = JsonConvert.DeserializeObject<LoginGovBrConfiabilidade>(response.Data);
+                    confiabilidade.TipoConfiabilidade = TipoConfiabilidade.Selos;
+                    response.Data = confiabilidade;
+                }
+            }
+            else
+            {
+                response = new APIResponse()
+                {
+                    Count = 0,
+                    Message = "Para recuperar os dados das confiabilidades vinculadas ao CPF, é necessário incluir o scope 'govbr_confiabilidades' à requisição de autenticação.",
+                    Result = false
+                };
+            }
 
             return response;
         }
+        */
     }
 }
